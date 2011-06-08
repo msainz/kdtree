@@ -2,25 +2,29 @@
 require './kdtree.rb'
 require 'benchmark'
 
-point = [rand, rand]
 points = []
 1000.times { |i| points << [rand, rand] }  
+neighbors = points[0..499]
+@@newcomers = points[500..-1]
 
 def euclidean_distance m, n
   Math.sqrt( m.each_with_index.inject(0) { |tot, (coord, index)| tot += (coord - n[index]) ** 2 } )
 end
 
-Benchmark.bm(7) do |x|
-  x.report('trivial 1NN search') do
-    10000.times do |i|
-      distances = points.map { |p| euclidean_distance p, point }
-      @@result1 = points[distances.index(distances.min)].inspect
+LABELS = ['trivial 1NN search', 'kdtree 1NN search']
+@@result1, @@result2 = [], []
+
+Benchmark.bm LABELS.map(&:length).max do |x|
+  x.report LABELS[0] do
+    @@newcomers.each do |newcomer|
+      distances = neighbors.map { |neighbor| euclidean_distance neighbor, newcomer }
+      @@result1 << points[distances.index(distances.min)].inspect
     end
   end
-  x.report('kdtree 1NN search') do
-    kdtree = KDTree.new(points)
-    10000.times do |i| 
-      @@result2 = kdtree.nearest_neighbors(point).location.inspect
+  x.report LABELS[1] do
+    kdtree = KDTree.new(neighbors)
+    @@newcomers.each do |newcomer| 
+      @@result2 << kdtree.nearest_neighbors(newcomer).location.inspect
     end
   end
 end
@@ -28,7 +32,9 @@ end
 require 'test/unit'
 class TestBenchmark < Test::Unit::TestCase
   def test_results_match
-    assert_equal @@result1, @@result2
+    @@result1.each_with_index do |r1, i|
+      assert_equal r1, @@result2[i], "i: #{i}, newcomer: #{@@newcomers[i].inspect}"
+    end
   end
 end
 
