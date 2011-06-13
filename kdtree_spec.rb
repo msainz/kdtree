@@ -37,16 +37,16 @@ describe KDTree do
       @kdtree.to_a.should eql [[2, 3], [5, 4], [4, 7], [7, 2], [8, 1], [9, 6]]
     end
   end
-  describe '#nearest_neighbors' do
+  describe '#nnearest' do
     it 'correctly finds the nearest neighbor' do
       newcomers = [[0,0], [7,2], [(4+9)/2.0,(6+7)/2.0]] # the last newcomer is midway between 2 nearest neighbors
-      newcomers.map {|newcomer| @kdtree.nearest_neighbors(newcomer).location }.should eql [[2,3], [7,2], [4,7]]
+      newcomers.map {|newcomer| @kdtree.nnearest(newcomer).location }.should eql [[2,3], [7,2], [4,7]]
       
       neighbors = [[6, 33], [9, 37], [12, 10], [15, 14], [20, 31], [22, 1], [25, 96], [31, 41], [31, 65], [36, 30], 
                    [46, 36], [56, 51], [57, 80], [62, 55], [78, 12], [81, 97], [86, 79], [91, 3]]
       kdtree = KDTree.new neighbors
-      #puts ''; kdtree.print; puts ''
-      kdtree.nearest_neighbors([10, 34]).location.should eql [9, 37]
+      puts ''; kdtree.print; puts ''
+      kdtree.nnearest([10, 34]).location.should eql [9, 37]
     end
   end
   context 'private methods' do

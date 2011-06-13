@@ -24,7 +24,7 @@ Benchmark.bm LABELS.map(&:length).max do |x|
   x.report LABELS[1] do
     kdtree = KDTree.new(@@neighbors)
     @@newcomers.each do |newcomer| 
-      @@result2 << kdtree.nearest_neighbors(newcomer).location.inspect
+      @@result2 << kdtree.nnearest(newcomer).location.inspect
     end
   end
 end
