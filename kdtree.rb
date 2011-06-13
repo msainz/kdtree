@@ -2,75 +2,73 @@
 # "K-Dimensional Tree" and "N-Nearest Neighbors" implementation based on http://en.wikipedia.org/wiki/Kd-tree
 
 class Node
-  attr_reader :location, :axis, :left_child, :right_child
-  def initialize location, axis, left_child = nil, right_child = nil
-    @location, @axis, @left_child, @right_child = 
-      location, axis, left_child, right_child
+  attr_reader :location, :split, :left, :right
+  def initialize(location, split, left = nil, right = nil)
+    @location, @split, @left, @right = 
+      location, split, left, right
   end
 end
 
 class KDTree
   attr_reader :k, :root
-  def initialize points, depth = 0
+  def initialize(points, depth = 0)
     @k = points.first.length # we assume all points have same dimension k
-    @root = build_kdtree points, depth
+    @root = build(points, depth)
   end
-  def nearest_neighbors point, nnearest = 1
-    search_nearest_neighbors @root, point, nil, nnearest
+  def nearest_neighbors(point, nnearest = 1)
+    search_nearest_neighbors(@root, point, nil, nnearest)
   end
   private
-  def build_kdtree points, depth = 0
+  def build(points, depth = 0)
     return if points.empty?
-    axis = select_axis depth
-    pivot = select_pivot points, axis
-    Node.new(points[pivot], axis,
-      build_kdtree(points[0...pivot], depth + 1),
-      build_kdtree(points[pivot+1..-1], depth + 1))
-  end
-  def select_axis depth
-    depth % @k
-  end
-  def select_pivot points, axis
-    points.sort! { |m,n| m[axis] <=> n[axis] }
-    points.length / 2 # make the pivot the median
+    split = depth % @k
+    points.sort! { |m,n| m[split] <=> n[split] }
+    pivot = points.length / 2 # make the pivot the median
+    Node.new(points[pivot], split,
+      build(points[0...pivot], depth + 1),
+      build(points[pivot+1..-1], depth + 1))
   end
   
   # TODO: provide the k-Nearest Neighbours to a point by maintaining k current bests instead of just one.
   # Branches are only eliminated when they can't have points closer than any of the k current bests.
-  def search_nearest_neighbors here, point, best, nnearest = 1
+  def search_nearest_neighbors(here, point, best, nnearest = 1)
     return best if here.nil?
+    # if the current node is better than the current best, then it becomes the current best
     best = here if best.nil? || distance(here.location, point) < distance(best.location, point)
+    # determine which branch contains the point along the split dimension
+    nearer, farther = point[here.split] <= here.location[here.split] ? 
+      [here.left, here.right] : [here.right, here.left]
     # search the nearer branch
-    child = nearer_child here, point
-    best = search_nearest_neighbors child, point, best
+    best = search_nearest_neighbors(nearer, point, best)
     # search the farther branch if the distance to the hyperplane is less than the best so far
-    if distance_to_hyperplane(here.location, point, here.axis) < distance(best.location, point)
-      child = farther_child here, point
-      best = search_nearest_neighbors child, point, best
-    end
-    # else no need to search in that whole branch i.e. prune!
+    best = search_nearest_neighbors(farther, point, best) if
+      distance([here.location[here.split]], [point[here.split]]) <= distance(best.location, point)
+    # else no need to search the entire farther branch i.e. prune!
     best
-  end
-  def nearer_child here, point
-    nearer_or_farther_child here, point, :<
-  end
-  def farther_child here, point
-    nearer_or_farther_child here, point, :>=
-  end
-  def nearer_or_farther_child here, point, op
-    return here.left_child if here.right_child.nil?
-    return here.right_child if here.left_child.nil?
-    distance(here.left_child.location, point).send(op, distance(here.right_child.location, point)) ?
-      here.left_child : here.right_child
   end  
   def distance m, n
-    # we'll use squared euclidean distance (to avoid expensive sqrt operation)
-    # Ruby 1.9: m.each_with_index.inject(0) { |tot, (coord, index)| tot += (coord - n[index]) ** 2 }
-    sum_of_squares = 0
-    m.each_with_index { |coord, index| sum_of_squares += (coord - n[index]) ** 2 }
-    sum_of_squares
+    # squared euclidean distance (to avoid expensive sqrt operation)
+    m.each_with_index.inject(0) { |tot, (coord, index)| tot += (coord - n[index]) ** 2 }
   end
-  def distance_to_hyperplane m, n, axis
-    (m[axis] - n[axis]) ** 2
+end
+
+# extensions for printing
+class Node
+  def to_a # inorder
+     @left.to_a + [@location] + @right.to_a
+  end
+  def print l=0
+     @right.print(l+1) if @right     
+     puts("    "*l + @location.inspect)
+     @left.print(l+1) if @left
+  end
+end
+
+class KDTree
+  def to_a
+    @root.to_a
+  end
+  def print
+    @root.print
   end
 end

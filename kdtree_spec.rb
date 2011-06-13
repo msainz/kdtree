@@ -12,30 +12,41 @@ describe KDTree do
       @kdtree.k.should eql 2
       # depth-first assertions
       @kdtree.root.location.should eql [7,2]
-      @kdtree.root.axis.should eql 0
-      @kdtree.root.left_child.location.should eql [5,4]
-      @kdtree.root.left_child.axis.should eql 1
-      @kdtree.root.left_child.left_child.location.should eql [2,3]
-      @kdtree.root.left_child.left_child.axis.should eql 0      
-      @kdtree.root.left_child.left_child.left_child.should be_nil
-      @kdtree.root.left_child.left_child.right_child.should be_nil
-      @kdtree.root.left_child.right_child.location.should eql [4,7]
-      @kdtree.root.left_child.right_child.axis.should eql 0
-      @kdtree.root.left_child.right_child.left_child.should be_nil
-      @kdtree.root.left_child.right_child.right_child.should be_nil
-      @kdtree.root.right_child.location.should eql [9,6]
-      @kdtree.root.right_child.axis.should eql 1
-      @kdtree.root.right_child.left_child.location.should eql [8,1]
-      @kdtree.root.right_child.left_child.axis.should eql 0      
-      @kdtree.root.right_child.left_child.left_child.should be_nil
-      @kdtree.root.right_child.left_child.right_child.should be_nil
-      @kdtree.root.right_child.right_child.should be_nil
+      @kdtree.root.split.should eql 0
+      @kdtree.root.left.location.should eql [5,4]
+      @kdtree.root.left.split.should eql 1
+      @kdtree.root.left.left.location.should eql [2,3]
+      @kdtree.root.left.left.split.should eql 0      
+      @kdtree.root.left.left.left.should be_nil
+      @kdtree.root.left.left.right.should be_nil
+      @kdtree.root.left.right.location.should eql [4,7]
+      @kdtree.root.left.right.split.should eql 0
+      @kdtree.root.left.right.left.should be_nil
+      @kdtree.root.left.right.right.should be_nil
+      @kdtree.root.right.location.should eql [9,6]
+      @kdtree.root.right.split.should eql 1
+      @kdtree.root.right.left.location.should eql [8,1]
+      @kdtree.root.right.left.split.should eql 0      
+      @kdtree.root.right.left.left.should be_nil
+      @kdtree.root.right.left.right.should be_nil
+      @kdtree.root.right.right.should be_nil
+    end
+  end
+  describe '#to_a' do
+    it 'correctly returns the tree in (inorder) array form' do
+      @kdtree.to_a.should eql [[2, 3], [5, 4], [4, 7], [7, 2], [8, 1], [9, 6]]
     end
   end
   describe '#nearest_neighbors' do
     it 'correctly finds the nearest neighbor' do
-      candidates = [[0,0], [7,2], [(4+9)/2.0,(6+7)/2.0]] # the last candidate is midway between 2 nearest neighbors
-      candidates.map {|c| @kdtree.nearest_neighbors(c).location }.should eql [[2,3], [7,2], [9,6]]
+      newcomers = [[0,0], [7,2], [(4+9)/2.0,(6+7)/2.0]] # the last newcomer is midway between 2 nearest neighbors
+      newcomers.map {|newcomer| @kdtree.nearest_neighbors(newcomer).location }.should eql [[2,3], [7,2], [4,7]]
+      
+      neighbors = [[6, 33], [9, 37], [12, 10], [15, 14], [20, 31], [22, 1], [25, 96], [31, 41], [31, 65], [36, 30], 
+                   [46, 36], [56, 51], [57, 80], [62, 55], [78, 12], [81, 97], [86, 79], [91, 3]]
+      kdtree = KDTree.new neighbors
+      #puts ''; kdtree.print; puts ''
+      kdtree.nearest_neighbors([10, 34]).location.should eql [9, 37]
     end
   end
   context 'private methods' do
@@ -45,26 +56,5 @@ describe KDTree do
         @kdtree.send(:distance, [1,2,3], [4,5,6]).should eql 27
       end
     end
-    describe '#distance_to_hyperplane' do
-      it 'computes squared euclidean distance along the specified dimension' do
-        @kdtree.send(:distance_to_hyperplane, [1,2], [3,4], 0).should eql 4
-        @kdtree.send(:distance_to_hyperplane, [1,2,3], [4,5,6], 1).should eql 9
-      end
-    end  
-    describe '#nearer_or_farther_child' do
-      before do
-        @node = Node.new([], 0, 
-          Node.new([0,2],-1),
-          Node.new([1,0],-1))
-      end
-      it 'correctly returns the nearer child' do
-        @kdtree.send(:nearer_child, @node, [0.5,1.8]).should eql @node.left_child
-      end
-      it 'correctly returns the farther child' do
-        @kdtree.send(:farther_child, @node, [0.5,1.8]).should eql @node.right_child
-      end
-    end
-  end
-  describe '#to_yaml' do
   end
 end

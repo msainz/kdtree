@@ -3,9 +3,9 @@ require './kdtree.rb'
 require 'benchmark'
 
 points = []
-1000.times { |i| points << [rand, rand] }  
-neighbors = points[0..499]
-@@newcomers = points[500..-1]
+10000.times { |i| points << [rand, rand] }  
+@@neighbors = points[0..4999]
+@@newcomers = points[5000..-1]
 
 def euclidean_distance m, n
   Math.sqrt( m.each_with_index.inject(0) { |tot, (coord, index)| tot += (coord - n[index]) ** 2 } )
@@ -17,12 +17,12 @@ LABELS = ['trivial 1NN search', 'kdtree 1NN search']
 Benchmark.bm LABELS.map(&:length).max do |x|
   x.report LABELS[0] do
     @@newcomers.each do |newcomer|
-      distances = neighbors.map { |neighbor| euclidean_distance neighbor, newcomer }
+      distances = @@neighbors.map { |neighbor| euclidean_distance neighbor, newcomer }
       @@result1 << points[distances.index(distances.min)].inspect
     end
   end
   x.report LABELS[1] do
-    kdtree = KDTree.new(neighbors)
+    kdtree = KDTree.new(@@neighbors)
     @@newcomers.each do |newcomer| 
       @@result2 << kdtree.nearest_neighbors(newcomer).location.inspect
     end
