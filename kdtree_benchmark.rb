@@ -17,6 +17,7 @@ LABELS = ['trivial 1NN search', 'kdtree 1NN search']
 Benchmark.bm LABELS.map(&:length).max do |x|
   x.report LABELS[0] do
     @@newcomers.each do |newcomer|
+      # trivial linear search of the entire array
       distances = @@neighbors.map { |neighbor| euclidean_distance neighbor, newcomer }
       @@result1 << points[distances.index(distances.min)].inspect
     end
@@ -24,7 +25,7 @@ Benchmark.bm LABELS.map(&:length).max do |x|
   x.report LABELS[1] do
     kdtree = KDTree.new(@@neighbors)
     @@newcomers.each do |newcomer| 
-      @@result2 << kdtree.nnearest(newcomer).location.inspect
+      @@result2 << kdtree.nnearest(newcomer).first.inspect
     end
   end
 end

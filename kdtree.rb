@@ -16,7 +16,7 @@ class KDTree
     @root = build(points, depth)
   end
   def nnearest(point, nnearest = 1)
-    nnearest!(@root, point, nil, nnearest)
+    nnearest!(@root, point, [ ], nnearest)
   end
   private
   def build(points, depth = 0)
@@ -29,20 +29,21 @@ class KDTree
       build(points[pivot+1..-1], depth + 1))
   end
   
-  # TODO: provide the N-Nearest Neighbours to a point by maintaining N current bests instead of just one.
-  # Branches are only eliminated when they can't have points closer than any of the N current bests.
   def nnearest!(here, point, best, nnearest = 1)
     return best if here.nil?
-    # if the current node is better than the current best, then it becomes the current best
-    best = here if best.nil? || distance(here.location, point) < distance(best.location, point)
+    # if the current node is better than any of the current best, then it becomes a current best
+    if best.length < nnearest or
+      (ix = best.find_index { |b| distance(here.location, point) < distance(b, point) })
+      ix ? best[ix] = here.location : best.push(here.location) 
+    end
     # determine which branch contains the point along the split dimension
     nearer, farther = point[here.split] <= here.location[here.split] ? 
       [here.left, here.right] : [here.right, here.left]
     # search the nearer branch
-    best = nnearest!(nearer, point, best)
-    # search the farther branch if the distance to the hyperplane is less than the best so far
-    best = nnearest!(farther, point, best) if
-      distance([here.location[here.split]], [point[here.split]]) <= distance(best.location, point)
+    best = nnearest!(nearer, point, best, nnearest)
+    # search the farther branch if the distance to the hyperplane is less than any best so far
+    best = nnearest!(farther, point, best, nnearest) if
+      best.find { |b| distance(b, point) >= distance([here.location[here.split]], [point[here.split]]) }
     # else no need to search the entire farther branch i.e. prune!
     best
   end  
