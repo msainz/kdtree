@@ -22,7 +22,7 @@ class KDTree
   def build(points, depth = 0)
     return if points.empty?
     split = depth % @k
-    points.sort! { |m,n| m[split] <=> n[split] }
+    points = points.sort { |m,n| m[split] <=> n[split] }
     pivot = points.length / 2 # make the pivot the median
     Node.new(points[pivot], split,
       build(points[0...pivot], depth + 1),
