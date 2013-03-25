@@ -31,7 +31,7 @@ kdtree.print
 ```
 #####Nearest Neighbors
 Current implementation uses squared euclidean as distance metric.
-That is, for any 2 points a and b in D-dimensional space:
+That is, for any 2 points a and b in D-dimensional space:<br>
 ![equation](http://latex.codecogs.com/gif.latex?%5Csum_%7Bd%3D1%7D%5E%7BD%7D%28a_d-b_d%29%5E2)
 #####1-NN
 ```ruby
