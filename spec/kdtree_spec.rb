@@ -11,22 +11,22 @@ describe KDTree do
     it 'correctly builds a 2D-tree' do
       @kdtree.k.should eql 2
       # depth-first assertions
-      @kdtree.root.location.should eql [7,2]
-      @kdtree.root.split.should eql 0
-      @kdtree.root.left.location.should eql [5,4]
-      @kdtree.root.left.split.should eql 1
-      @kdtree.root.left.left.location.should eql [2,3]
-      @kdtree.root.left.left.split.should eql 0      
+      @kdtree.root.pivot.should eql [7,2]
+      @kdtree.root.spldim.should eql 0
+      @kdtree.root.left.pivot.should eql [5,4]
+      @kdtree.root.left.spldim.should eql 1
+      @kdtree.root.left.left.pivot.should eql [2,3]
+      @kdtree.root.left.left.spldim.should eql 0      
       @kdtree.root.left.left.left.should be_nil
       @kdtree.root.left.left.right.should be_nil
-      @kdtree.root.left.right.location.should eql [4,7]
-      @kdtree.root.left.right.split.should eql 0
+      @kdtree.root.left.right.pivot.should eql [4,7]
+      @kdtree.root.left.right.spldim.should eql 0
       @kdtree.root.left.right.left.should be_nil
       @kdtree.root.left.right.right.should be_nil
-      @kdtree.root.right.location.should eql [9,6]
-      @kdtree.root.right.split.should eql 1
-      @kdtree.root.right.left.location.should eql [8,1]
-      @kdtree.root.right.left.split.should eql 0      
+      @kdtree.root.right.pivot.should eql [9,6]
+      @kdtree.root.right.spldim.should eql 1
+      @kdtree.root.right.left.pivot.should eql [8,1]
+      @kdtree.root.right.left.spldim.should eql 0      
       @kdtree.root.right.left.left.should be_nil
       @kdtree.root.right.left.right.should be_nil
       @kdtree.root.right.right.should be_nil
